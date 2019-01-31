@@ -1,0 +1,107 @@
+import numpy as np
+from matplotlib import pyplot as plt
+
+
+def CostFunction(X,Y,Theta):
+    m = len(Y)
+    h = X @ Theta    
+    return sum((h-Y)**2)/(2*m)
+
+
+def Gradient(X,Y,Theta):
+    m = len(Y)
+    h = X @ Theta
+    return sum((h-Y) @ X)/(m)
+
+def GradientDes(X,Y,Theta,alpha,num_iters):
+    m = len(Y)
+    J_his = []
+    h = X @ Theta
+    for i in range(num_iters):
+        h = X @ Theta
+        Theta = Theta - (alpha/m) * (X.T @ (h-Y))
+        J_his.append(CostFunction(X,Y,Theta))
+    return [Theta,J_his]
+
+
+def Normalize(X):
+    X_norm = X
+    mu = []
+    sigma = []
+    for i in range(len(X[0])):
+        mu.append(np.mean(X[:,i]))
+        sigma.append(np.std(X[:,i]))
+        X_norm[:,i] = (X_norm[:,i]-mu[i])/sigma[i]
+    return X_norm
+
+def BestFit(X,Y,deg):
+    if X.ndim == 1:
+        X = [list(X)]
+        X = np.array(X).T 
+    var = len(X[0])
+    Y = Y.flatten()
+    X = Normalize(X)
+    X1 = X
+    for i in range(1,deg):
+        X1 = np.concatenate((X1,X**(i+1)),axis=1)
+    X1 = np.insert(X1,0,1,axis=1)
+    Theta = np.zeros((deg*var+1,1)).flatten()
+    alpha = 0.01
+    num_iters = 400
+    Theta = GradientDes(X1,Y,Theta,alpha,num_iters)[0]
+    J_his = GradientDes(X1,Y,Theta,alpha,num_iters)[1]
+        
+    if var == 1:
+        x = np.linspace(np.min(X),np.max(X),(int(np.max(X)-np.min(X))*100))
+        x = [list(x)]
+        x = np.array(x).T
+        x1 = x
+        for i in range(1,deg):
+            x1 = np.concatenate((x1,x**(i+1)),axis=1)
+        x1 = np.insert(x1,0,1,axis=1)
+        y = x1 @ Theta
+        plt.scatter(X,Y)
+        plt.plot(x,y,'red')
+        plt.show()
+    elif var == 2:
+        d = max((int(np.max(X[:,0])-np.min(X[:,0]))*100),(int(np.max(X[:,1])-np.min(X[:,1]))*100))
+        x0 = np.linspace(np.min(X[:,0]),np.max(X[:,0]),d)
+        x0 = np.array([list(x0)]).T
+        x1 = np.linspace(np.min(X[:,1]),np.max(X[:,1]),d)
+        x1 = np.array([list(x1)]).T
+        x2 = np.concatenate((x0,x1),axis=1)
+        x3 = x2
+        for i in range(1,deg):
+            x3 = np.concatenate((x3,x2**(i+1)),axis=1)
+        x3 = np.insert(x3,0,1,axis=1)
+        y = x3 @ Theta
+        fig = plt.figure()
+        ax = fig.add_subplot(111,projection='3d')
+        ax.scatter(list(X[:,0]),list(X[:,1]),Y)
+        ax.scatter(x0,x1,y)
+        plt.show()
+    
+    Iter = list(range(num_iters))
+    plt.plot(Iter,J_his,'red')
+    plt.show()
+    
+    p = '('+str(Theta[0])+')'    
+    v = []
+    for i in range(var):
+        v.append('X'+str(i))
+    t = np.reshape(np.array(Theta[1:]),(deg,var))
+    for i in range(var):
+        p = p + ' + (' +str(t[0][i])+ ')' + str(v[i])
+    for i in range(1,deg):
+        for j in range(var):
+            p = p + ' + (' +str(t[i][j])+ ')' + str(v[j]) + '^' + str(i+1)
+    print('Polynomial Equation is:\n' + p)
+    return Theta
+    
+def GetVAl(X, Theta, deg): 
+    X = np.array(X)
+    X1 = X
+    for i in range(1,deg):
+        X1 = np.concatenate((X1,X**(i+1)),axis=0)
+    X1 = np.insert(X1,0,1,axis=0)
+    print(X1 @ Theta)
