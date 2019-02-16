@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+from mpl_toolkits.mplot3d import Axes3D
 
 def CostFunction(X,Y,Theta):
     m = len(Y)
@@ -80,8 +80,8 @@ def BestFit(X,Y,deg):
         fig = plt.figure()
         ax = fig.gca(projection='3d')
         
-        ax.scatter(list(X[:,0]),list(X[:,1]),Y, c = 'g')
-        ax.plot_surface(X0, X1, y, cmap=cm.coolwarm)
+        ax.scatter(list(X[:,0]),list(X[:,1]),Y, c = 'r')
+        ax.plot_surface(X0, X1, y, cmap='viridis')
         plt.show()
     
     Iter = list(range(num_iters))
